@@ -75,9 +75,12 @@ require_once '../View/header.php';
         </div>
         <div>
             <h1 class="h1 text-center"> Products</h1>
-            <div class="row" id="load_data">
-                <!-- Nội dung bạn muốn chèn vào đây -->
+            <div id="product_list">
+                <!-- Danh sách sản phẩm sẽ được hiển thị ở đây -->
             </div>
+            <div class="pagination">
+            <!-- Pagination controls will be displayed here -->
+        </div>
         </div>
     </div>
 </section>
@@ -163,4 +166,23 @@ require_once '../View/header.php';
 require_once '../view/footer.php';
 
 ?>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // list product 
+$(document).ready(function() {
+    loadProducts(); // Gọi hàm này khi trang web được tải
 
+    function loadProducts() {
+        $.ajax({
+            url: '../Authentication/Listproduct.php', // Đường dẫn tới trang Listproduct.php
+            type: 'POST',
+            success: function(data) {
+                $('#product_list').html(data); // Hiển thị danh sách sản phẩm trong div có id là product_list
+            },
+            error: function(xhr, status, error) {
+                console.log('Error: ' + error);
+            }
+        });
+    }
+});
+</script>
