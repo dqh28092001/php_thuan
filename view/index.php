@@ -68,19 +68,20 @@ require_once '../View/header.php';
         <div class="row">
             <div class="col-lg-4 col-md-4">
                 <div class="section-title">
-                    <h4>New product</h4>
+                    <h4>Products</h4>
                 </div>
             </div>
 
         </div>
         <div>
-            <h1 class="h1 text-center"> Products</h1>
             <div id="product_list">
                 <!-- Danh sách sản phẩm sẽ được hiển thị ở đây -->
             </div>
-            <div class="pagination">
-            <!-- Pagination controls will be displayed here -->
-        </div>
+            <div id="pagination_container">
+                <!-- Các nút phân trang sẽ được hiển thị ở đây -->
+            </div>
+
+
         </div>
     </div>
 </section>
@@ -168,21 +169,66 @@ require_once '../view/footer.php';
 ?>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    // list product 
-$(document).ready(function() {
-    loadProducts(); // Gọi hàm này khi trang web được tải
-
-    function loadProducts() {
+    // Định nghĩa hàm loadProducts(page) để tải sản phẩm từ máy chủ
+    function loadProducts(page) {
         $.ajax({
-            url: '../Authentication/Listproduct.php', // Đường dẫn tới trang Listproduct.php
+            url: '../Authentication/Listproduct.php',
             type: 'POST',
+            data: {
+                page: page
+            },
             success: function(data) {
-                $('#product_list').html(data); // Hiển thị danh sách sản phẩm trong div có id là product_list
+                // Khi yêu cầu thành công, thay thế nội dung của #product_list bằng dữ liệu tải được
+                $('#product_list').html(data);
             },
             error: function(xhr, status, error) {
+                // Xử lý lỗi nếu có
                 console.log('Error: ' + error);
             }
         });
     }
-});
+
+    // Định nghĩa hàm changePage(page) để xử lý sự kiện khi người dùng chuyển trang
+    function changePage(page) {
+        loadProducts(page); // Gọi hàm loadProducts để tải sản phẩm cho trang mới
+
+        // Thay đổi URL trên thanh địa chỉ trình duyệt bằng cách sử dụng HTML5 History API
+        var newUrl = window.location.pathname + '?page=' + page;
+        history.pushState({}, '', newUrl);
+    }
+
+    $(document).ready(function() {
+        loadProducts(1); // Load trang đầu tiên khi trang web được tải
+
+        // Định nghĩa lại hàm loadProducts(page) bên trong ready function
+        function loadProducts(page) {
+            $.ajax({
+                url: '../Authentication/Listproduct.php',
+                type: 'POST',
+                data: {
+                    page: page
+                },
+                success: function(data) {
+                    $('#product_list').html(data);
+                },
+                error: function(xhr, status, error) {
+                    console.log('Error: ' + error);
+                }
+            });
+        }
+
+        // Lắng nghe sự kiện khi người dùng click vào nút phân trang (pagination-link)
+        $(document).on('click', '.pagination-link', function(e) {
+            e.preventDefault();
+            var page = $(this).data('page');
+            changePage(page); // Gọi hàm changePage để chuyển trang
+        });
+
+        // Lấy số trang từ URL nếu có và tải sản phẩm tương ứng
+        var urlParams = new URLSearchParams(window.location.search);
+        var pageParam = urlParams.get('page');
+        if (pageParam) {
+            loadProducts(pageParam);
+        }
+    });
 </script>
